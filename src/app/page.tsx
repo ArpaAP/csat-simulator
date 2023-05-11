@@ -11,6 +11,8 @@ import {
 
 export default function Home() {
   const [audio, setAudio] = useState<HTMLAudioElement>();
+  const [audioContext, setAudioContext] = useState<AudioContext>();
+  const [useEffector, setUseEffector] = useState(true);
   const [seconds, setSeconds] = useState(0);
   const [doneTimes, setDoneTimes] = useState<Set<string>>(new Set());
   const [currentTimename, setCurrentTimename] = useState(
@@ -19,65 +21,171 @@ export default function Home() {
   const [active, setActive] = useState(false);
 
   useEffect(() => {
-    setAudio(new Audio());
+    let audio = new Audio();
+    let audioContext = new AudioContext();
+
+    const sourceNode = audioContext.createMediaElementSource(audio);
+
+    const reverbMix = 0.8; // wet / dry
+    const reverbTime = 0.25; // 리버브 지속시간
+    const reverbDecay = 0.1; // 리버브 감쇠 빠르기
+
+    const delayMix = 0.7;
+    const delayFeedback = 0.7;
+    const delayTime = 0.001;
+
+    const inputNode = audioContext.createGain();
+    const reverbWetGainNode = audioContext.createGain();
+    const reverbDryGainNode = audioContext.createGain();
+    const reverbNode = audioContext.createConvolver();
+
+    const delayWetGainNode = audioContext.createGain();
+    const delayDryGainNode = audioContext.createGain();
+    const delayFeedbackNode = audioContext.createGain();
+    const delayNode = audioContext.createDelay(delayTime);
+
+    const outputNode = audioContext.createGain();
+
+    sourceNode.connect(inputNode);
+
+    // DELAY //
+
+    // Dry 소스 노드 연결
+    inputNode.connect(delayDryGainNode);
+    delayDryGainNode.connect(outputNode);
+    delayDryGainNode.gain.value = 1 - delayMix;
+
+    // Delay 루프 생성
+    delayNode.connect(delayFeedbackNode);
+    delayFeedbackNode.connect(delayNode);
+    delayFeedbackNode.gain.value = delayFeedback;
+
+    // Wet 소스 노드 연결
+    inputNode.connect(delayNode);
+    delayNode.connect(delayWetGainNode);
+    delayWetGainNode.connect(outputNode);
+    delayWetGainNode.gain.value = delayMix;
+
+    // REVERB //
+
+    // Dry 소스 노드 연결
+    delayWetGainNode.connect(reverbDryGainNode);
+    reverbDryGainNode.connect(outputNode);
+    reverbDryGainNode.gain.value = 1 - reverbMix;
+
+    // IR을 생성하여 Convolver의 오디오 버퍼에 입력해준다.
+    const sampleRate = audioContext.sampleRate;
+    const length = sampleRate * reverbTime;
+    const impulse = audioContext.createBuffer(2, length, sampleRate);
+
+    const leftImpulse = impulse.getChannelData(0);
+    const rightImpulse = impulse.getChannelData(1);
+
+    for (let i = 0; i < length; i++) {
+      leftImpulse[i] =
+        (Math.random() * 2 - 1) * Math.pow(1 - i / length, reverbDecay);
+      rightImpulse[i] =
+        (Math.random() * 2 - 1) * Math.pow(1 - i / length, reverbDecay);
+    }
+
+    reverbNode.buffer = impulse;
+
+    // Wet 소스 노드 연결
+    delayWetGainNode.connect(reverbNode);
+    reverbNode.connect(reverbWetGainNode);
+    reverbWetGainNode.connect(outputNode);
+    reverbWetGainNode.gain.value = reverbMix;
+
+    // COMPRESSOR //
+
+    const threshold = -12;
+    const attack = 0.003;
+    const release = 0.25;
+    const ratio = 12;
+    const knee = 30;
+
+    const compressorNode = audioContext.createDynamicsCompressor();
+    compressorNode.threshold.setValueAtTime(
+      threshold,
+      audioContext.currentTime
+    );
+    compressorNode.attack.setValueAtTime(attack, audioContext.currentTime);
+    compressorNode.release.setValueAtTime(release, audioContext.currentTime);
+    compressorNode.ratio.setValueAtTime(ratio, audioContext.currentTime);
+    compressorNode.knee.setValueAtTime(knee, audioContext.currentTime);
+
+    reverbWetGainNode.connect(compressorNode);
+
+    compressorNode.connect(outputNode);
+
+    outputNode.connect(audioContext.destination);
+
+    setAudio(audio);
+    setAudioContext(audioContext);
   }, []);
 
   useEffect(() => {
     if (active) {
-      let interval = setInterval(() => {
+      let timer = setInterval(() => {
         setSeconds((prev) => {
-          let current = dayjs()
-            .startOf("day")
-            .set("hour", 8)
-            .set("minute", 5)
-            .set("second", 0)
-            .add(seconds, "seconds");
-
-          let currentHourMin = current.format("HHmm");
-
-          let newDoneTimes = new Set(doneTimes);
-
-          let newCurrentTimename = "";
-
-          TIMELINE.forEach((one) => {
-            let oneHours = Number(one.time.substring(0, 2));
-            let oneMinutes = Number(one.time.substring(2, 4));
-
-            let oneTotalSeconds = oneHours * 60 * 60 + oneMinutes * 60 - 29100;
-
-            if (oneTotalSeconds < seconds) {
-              newDoneTimes.add(one.time);
-              newCurrentTimename = one.description;
-            }
-          });
-
-          if (!newDoneTimes.has(currentHourMin)) {
-            let source = TIMELINE.find(
-              (one) => one.time === currentHourMin && current.second() === 0
-            );
-
-            if (source?.audio) {
-              audio!.pause();
-              audio!.src = source.audio;
-              audio!.play();
-
-              newDoneTimes.add(current.format("HHmm"));
-
-              setDoneTimes(newDoneTimes);
-
-              newCurrentTimename = source.description;
-            }
-          }
-
-          setCurrentTimename(newCurrentTimename);
-
           return prev + 1;
         });
       }, 1000);
 
-      return () => clearInterval(interval);
+      let interval = setInterval(() => {
+        let current = dayjs()
+          .startOf("day")
+          .set("hour", 8)
+          .set("minute", 5)
+          .set("second", 0)
+          .add(seconds, "seconds");
+
+        let currentHourMin = current.format("HHmm");
+
+        let newDoneTimes = new Set(doneTimes);
+
+        let newCurrentTimename = "";
+
+        TIMELINE.forEach((one) => {
+          let oneHours = Number(one.time.substring(0, 2));
+          let oneMinutes = Number(one.time.substring(2, 4));
+
+          let oneTotalSeconds = oneHours * 60 * 60 + oneMinutes * 60 - 29100;
+
+          if (oneTotalSeconds < seconds) {
+            newDoneTimes.add(one.time);
+            newCurrentTimename = one.description;
+          }
+        });
+
+        if (!newDoneTimes.has(currentHourMin)) {
+          let source = TIMELINE.find(
+            (one) => one.time === currentHourMin && current.second() === 0
+          );
+
+          if (source?.audio) {
+            audio!.pause();
+            audio!.src = source.audio;
+            audioContext?.resume();
+            audio!.play();
+
+            newDoneTimes.add(current.format("HHmm"));
+
+            setDoneTimes(newDoneTimes);
+
+            newCurrentTimename = source.description;
+          }
+        }
+
+        setCurrentTimename(newCurrentTimename);
+      }, 100);
+
+      return () => {
+        clearInterval(timer);
+        clearInterval(interval);
+      };
     }
-  }, [active, audio, doneTimes, seconds]);
+  }, [active, audio, audioContext, doneTimes, seconds]);
 
   let current = dayjs()
     .startOf("day")
@@ -134,6 +242,7 @@ export default function Home() {
               className="flex gap-2 hover:bg-black/10 border border-gray-300 transition-all duration-300 my-auto px-3 py-2 rounded-lg"
               onClick={() => {
                 setActive(true);
+                audioContext?.resume();
                 if (!audio!.ended && audio!.src) {
                   audio!.play();
                 }
@@ -181,7 +290,7 @@ export default function Home() {
       <div
         className="bg-emerald-400 h-1.5 mb-0.5 rounded-sm"
         style={{
-          width: `${(seconds / 30720) * 100}%`,
+          width: `${(seconds / 30720) * 99.7}%`,
         }}
       />
       <div className="w-full flex gap-[1px] lg:gap-[4px]">
