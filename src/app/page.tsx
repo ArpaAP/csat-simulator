@@ -91,20 +91,20 @@ export default function Home() {
       <div className="flex">
         <div className="mr-auto">
           <h1
-            className="text-3xl mb-1.5"
+            className="text-xl lg:text-3xl mb-1.5"
             style={{
               wordBreak: "keep-all",
             }}
           >
             대학수학능력시험 시뮬레이터
           </h1>
-          <div className="text-gray-500 font-light text-sm">
+          <div className="text-gray-500 font-light text-xs lg:text-sm">
             CSAT SIMULATOR 2024
           </div>
         </div>
         <button
           type="button"
-          className="hover:bg-black/10 border border-gray-300 transition-all duration-300 my-auto px-3 py-2 rounded-lg"
+          className="flex-shrink-0 hover:bg-black/10 border border-gray-300 transition-all duration-300 my-auto px-3 py-2 rounded-lg"
         >
           설정...
         </button>
@@ -134,7 +134,7 @@ export default function Home() {
               className="flex gap-2 hover:bg-black/10 border border-gray-300 transition-all duration-300 my-auto px-3 py-2 rounded-lg"
               onClick={() => {
                 setActive(true);
-                if (!audio!.ended) {
+                if (!audio!.ended && audio!.src) {
                   audio!.play();
                 }
               }}
@@ -147,8 +147,15 @@ export default function Home() {
             type="button"
             className="flex gap-2 hover:bg-black/10 border border-gray-300 transition-all duration-300 my-auto px-3 py-2 rounded-lg"
             onClick={() => {
-              let hour = Number(prompt("이동할 시"));
-              let minute = Number(prompt("이동할 분"));
+              let hourPrompt = prompt("이동할 시");
+              if (hourPrompt === null) return;
+
+              let hour = Number(hourPrompt);
+
+              let minutePrompt = Number(prompt("이동할 분"));
+              if (minutePrompt === null) return;
+
+              let minute = Number(minutePrompt);
 
               let newSeconds = hour * 60 * 60 + minute * 60 - 29100;
 
@@ -203,7 +210,7 @@ export default function Home() {
                   "text-[5px] text-gray-600 w-[5px] tracking-tight leading-tight",
                   ["준비령", "입실준비", "예비령", "10분전", "5분전"].includes(
                     one.short
-                  )
+                  ) || one.time === "1600"
                     ? "hidden lg:block"
                     : ""
                 )}
