@@ -1,60 +1,127 @@
 "use client";
 import TIMELINE from "@/data/timeline";
-import Image from "next/image";
 import { useEffect, useState } from "react";
 import dayjs from "dayjs";
 import classNames from "classnames";
+import { TbPlayerPlay, TbPlayerPause } from "react-icons/tb";
+
 export default function Home() {
   const [audio, setAudio] = useState<HTMLAudioElement>();
-  const [initialDate, setInitialDate] = useState(dayjs());
-  const [now, setNow] = useState(dayjs());
+  const [seconds, setSeconds] = useState(0);
+  const [doneTimes, setDoneTimes] = useState<string[]>([]);
+  const [active, setActive] = useState(false);
 
   useEffect(() => {
-    let audio = new Audio(TIMELINE[0].audio!);
-    setAudio(audio);
+    if (active) {
+      let interval = setInterval(() => {
+        setSeconds((prev) => prev + 1);
+      }, 1000);
 
-    const handle = () => {
-      setNow(dayjs());
-      console.log(initialDate.toISOString());
-    };
-    const interval = setInterval(handle, 500);
+      return () => clearInterval(interval);
+    }
+  }, [active]);
 
-    return () => clearInterval(interval);
-  }, [initialDate]);
+  useEffect(() => {
+    if (active) {
+      const interval = setInterval(() => {
+        let current = dayjs()
+          .startOf("day")
+          .set("hour", 8)
+          .set("minute", 5)
+          .set("second", 0)
+          .add(seconds, "seconds");
+
+        let currentHourMin = current.format("HHmm");
+
+        console.log(currentHourMin);
+
+        if (!doneTimes.includes(currentHourMin)) {
+          let source = TIMELINE.find((one) => one.time === currentHourMin);
+
+          if (source?.audio) {
+            let audio = new Audio(source.audio);
+            setAudio(audio);
+            audio.play();
+
+            setDoneTimes(doneTimes.concat([current.format("HHmm")]));
+          }
+        }
+      }, 500);
+
+      return () => clearInterval(interval);
+    }
+  }, [active, doneTimes, seconds]);
+
+  let current = dayjs()
+    .startOf("day")
+    .set("hour", 8)
+    .set("minute", 5)
+    .set("second", 0)
+    .add(seconds, "seconds");
 
   return (
-    <main className="container mx-auto px-4 lg:px-10 py-4 lg:py-10 h-screen flex flex-col">
-      <div>
-        <h1
-          className="text-3xl mb-1.5"
-          style={{
-            wordBreak: "keep-all",
-          }}
-        >
-          대학수학능력시험 시뮬레이터
-        </h1>
-        <div className="text-gray-500 font-light text-sm">
-          CSAT SIMULATOR 2024
+    <main className="container mx-auto px-4 xl:px-10 py-4 lg:py-10 h-screen flex flex-col">
+      <div className="flex">
+        <div className="mr-auto">
+          <h1
+            className="text-3xl mb-1.5"
+            style={{
+              wordBreak: "keep-all",
+            }}
+          >
+            대학수학능력시험 시뮬레이터
+          </h1>
+          <div className="text-gray-500 font-light text-sm">
+            CSAT SIMULATOR 2024
+          </div>
         </div>
+        <button
+          type="button"
+          className="hover:bg-black/10 border border-gray-300 transition-all duration-300 my-auto px-3 py-2 rounded-lg"
+        >
+          설정...
+        </button>
       </div>
       <hr className="border-gray-300 border-[0.5px] my-4" />
       <div className="text-center my-auto select-none">
         <div className="text-6xl lg:text-8xl pb-5">
-          {dayjs()
-            .startOf("day")
-            .set("hour", 8)
-            .set("minute", 5)
-            .set("second", 0)
-            .add(now.diff(initialDate), "millisecond")
-            .format("HH:mm:ss")}
+          {current.format("HH:mm:ss")}
         </div>
         <div className="text-2xl font-medium">1교시 국어 본령</div>
+
+        <div className="my-5 pt-5 flex justify-center w-full">
+          {active ? (
+            <button
+              type="button"
+              className="flex gap-2 hover:bg-black/10 border border-gray-300 transition-all duration-300 my-auto px-3 py-2 rounded-lg"
+              onClick={() => {
+                setActive(false);
+                audio?.pause();
+              }}
+            >
+              <TbPlayerPause className="my-auto" size={18} /> 중지
+            </button>
+          ) : (
+            <button
+              type="button"
+              className="flex gap-2 hover:bg-black/10 border border-gray-300 transition-all duration-300 my-auto px-3 py-2 rounded-lg"
+              onClick={() => {
+                setActive(true);
+                if (!audio?.ended) {
+                  audio?.play();
+                }
+              }}
+            >
+              <TbPlayerPlay className="my-auto" size={18} /> 시작
+            </button>
+          )}
+        </div>
       </div>
 
       <div
         className="bg-emerald-400 h-1.5 mb-0.5 rounded-sm"
         style={{
-          width: `${(now.diff(initialDate, "seconds") / 30720) * 100}%`,
+          width: `${(current.second() / 30720) * 100}%`,
         }}
       />
       <div className="w-full flex gap-[1px] lg:gap-[4px]">
