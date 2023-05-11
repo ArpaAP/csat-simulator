@@ -87,7 +87,7 @@ export default function Home() {
     .add(seconds, "seconds");
 
   return (
-    <main className="container mx-auto px-4 xl:px-10 py-4 lg:py-10 h-screen flex flex-col">
+    <main className="container mx-auto px-4 py-4 lg:py-10 h-screen flex flex-col">
       <div className="flex">
         <div className="mr-auto">
           <h1
