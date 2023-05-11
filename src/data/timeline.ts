@@ -122,7 +122,7 @@ const TIMELINE: {
     description: "3교시 영어 본령",
     short: "본령",
     duration: 60,
-    audio: null,
+    audio: "/sounds/eng.mp3",
   },
   {
     time: "1410",
