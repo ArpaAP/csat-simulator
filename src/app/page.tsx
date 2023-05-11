@@ -3,54 +3,77 @@ import TIMELINE from "@/data/timeline";
 import { useEffect, useState } from "react";
 import dayjs from "dayjs";
 import classNames from "classnames";
-import { TbPlayerPlay, TbPlayerPause } from "react-icons/tb";
+import {
+  TbPlayerPlay,
+  TbPlayerPause,
+  TbArrowsMoveHorizontal,
+} from "react-icons/tb";
 
 export default function Home() {
-  const [audio, setAudio] = useState<HTMLAudioElement>();
+  const [audio] = useState<HTMLAudioElement>(new Audio());
   const [seconds, setSeconds] = useState(0);
-  const [doneTimes, setDoneTimes] = useState<string[]>([]);
+  const [doneTimes, setDoneTimes] = useState<Set<string>>(new Set());
+  const [currentTimename, setCurrentTimename] = useState(
+    TIMELINE[0].description
+  );
   const [active, setActive] = useState(false);
 
   useEffect(() => {
     if (active) {
       let interval = setInterval(() => {
-        setSeconds((prev) => prev + 1);
+        setSeconds((prev) => {
+          let current = dayjs()
+            .startOf("day")
+            .set("hour", 8)
+            .set("minute", 5)
+            .set("second", 0)
+            .add(seconds, "seconds");
+
+          let currentHourMin = current.format("HHmm");
+
+          let newDoneTimes = new Set(doneTimes);
+
+          let newCurrentTimename = "";
+
+          TIMELINE.forEach((one) => {
+            let oneHours = Number(one.time.substring(0, 2));
+            let oneMinutes = Number(one.time.substring(2, 4));
+
+            let oneTotalSeconds = oneHours * 60 * 60 + oneMinutes * 60 - 29100;
+
+            if (oneTotalSeconds < seconds) {
+              newDoneTimes.add(one.time);
+              newCurrentTimename = one.description;
+            }
+          });
+
+          if (!newDoneTimes.has(currentHourMin)) {
+            let source = TIMELINE.find(
+              (one) => one.time === currentHourMin && current.second() === 0
+            );
+
+            if (source?.audio) {
+              audio.pause();
+              audio.src = source.audio;
+              audio.play();
+
+              newDoneTimes.add(current.format("HHmm"));
+
+              setDoneTimes(newDoneTimes);
+
+              newCurrentTimename = source.description;
+            }
+          }
+
+          setCurrentTimename(newCurrentTimename);
+
+          return prev + 1;
+        });
       }, 1000);
 
       return () => clearInterval(interval);
     }
-  }, [active]);
-
-  useEffect(() => {
-    if (active) {
-      const interval = setInterval(() => {
-        let current = dayjs()
-          .startOf("day")
-          .set("hour", 8)
-          .set("minute", 5)
-          .set("second", 0)
-          .add(seconds, "seconds");
-
-        let currentHourMin = current.format("HHmm");
-
-        console.log(currentHourMin);
-
-        if (!doneTimes.includes(currentHourMin)) {
-          let source = TIMELINE.find((one) => one.time === currentHourMin);
-
-          if (source?.audio) {
-            let audio = new Audio(source.audio);
-            setAudio(audio);
-            audio.play();
-
-            setDoneTimes(doneTimes.concat([current.format("HHmm")]));
-          }
-        }
-      }, 500);
-
-      return () => clearInterval(interval);
-    }
-  }, [active, doneTimes, seconds]);
+  }, [active, audio, doneTimes, seconds]);
 
   let current = dayjs()
     .startOf("day")
@@ -87,16 +110,16 @@ export default function Home() {
         <div className="text-6xl lg:text-8xl pb-5">
           {current.format("HH:mm:ss")}
         </div>
-        <div className="text-2xl font-medium">1교시 국어 본령</div>
+        <div className="text-2xl font-medium">{currentTimename}</div>
 
-        <div className="my-5 pt-5 flex justify-center w-full">
+        <div className="my-5 pt-5 flex gap-3 justify-center w-full">
           {active ? (
             <button
               type="button"
               className="flex gap-2 hover:bg-black/10 border border-gray-300 transition-all duration-300 my-auto px-3 py-2 rounded-lg"
               onClick={() => {
                 setActive(false);
-                audio?.pause();
+                audio.pause();
               }}
             >
               <TbPlayerPause className="my-auto" size={18} /> 중지
@@ -107,21 +130,47 @@ export default function Home() {
               className="flex gap-2 hover:bg-black/10 border border-gray-300 transition-all duration-300 my-auto px-3 py-2 rounded-lg"
               onClick={() => {
                 setActive(true);
-                if (!audio?.ended) {
-                  audio?.play();
+                if (!audio.ended) {
+                  audio.play();
                 }
               }}
             >
               <TbPlayerPlay className="my-auto" size={18} /> 시작
             </button>
           )}
+
+          <button
+            type="button"
+            className="flex gap-2 hover:bg-black/10 border border-gray-300 transition-all duration-300 my-auto px-3 py-2 rounded-lg"
+            onClick={() => {
+              let hour = Number(prompt("이동할 시"));
+              let minute = Number(prompt("이동할 분"));
+
+              let newSeconds = hour * 60 * 60 + minute * 60 - 29100;
+
+              if (isNaN(hour) || isNaN(minute)) {
+                return alert("숫자만 입력하십시오.");
+              }
+
+              if (newSeconds < 0) {
+                return alert("08시 05분 이후의 시간을 입력하십시오.");
+              }
+
+              audio.pause();
+              audio.src = "";
+              setSeconds(newSeconds);
+              setDoneTimes(new Set());
+            }}
+          >
+            <TbArrowsMoveHorizontal className="my-auto" size={18} /> 이동
+          </button>
         </div>
       </div>
 
       <div
         className="bg-emerald-400 h-1.5 mb-0.5 rounded-sm"
         style={{
-          width: `${(current.second() / 30720) * 100}%`,
+          width: `${(seconds / 30720) * 100}%`,
         }}
       />
       <div className="w-full flex gap-[1px] lg:gap-[4px]">
