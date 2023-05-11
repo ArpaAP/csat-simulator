@@ -10,13 +10,17 @@ import {
 } from "react-icons/tb";
 
 export default function Home() {
-  const [audio] = useState<HTMLAudioElement>(new Audio());
+  const [audio, setAudio] = useState<HTMLAudioElement>();
   const [seconds, setSeconds] = useState(0);
   const [doneTimes, setDoneTimes] = useState<Set<string>>(new Set());
   const [currentTimename, setCurrentTimename] = useState(
     TIMELINE[0].description
   );
   const [active, setActive] = useState(false);
+
+  useEffect(() => {
+    setAudio(new Audio());
+  }, []);
 
   useEffect(() => {
     if (active) {
@@ -53,9 +57,9 @@ export default function Home() {
             );
 
             if (source?.audio) {
-              audio.pause();
-              audio.src = source.audio;
-              audio.play();
+              audio!.pause();
+              audio!.src = source.audio;
+              audio!.play();
 
               newDoneTimes.add(current.format("HHmm"));
 
@@ -119,7 +123,7 @@ export default function Home() {
               className="flex gap-2 hover:bg-black/10 border border-gray-300 transition-all duration-300 my-auto px-3 py-2 rounded-lg"
               onClick={() => {
                 setActive(false);
-                audio.pause();
+                audio!.pause();
               }}
             >
               <TbPlayerPause className="my-auto" size={18} /> 중지
@@ -130,8 +134,8 @@ export default function Home() {
               className="flex gap-2 hover:bg-black/10 border border-gray-300 transition-all duration-300 my-auto px-3 py-2 rounded-lg"
               onClick={() => {
                 setActive(true);
-                if (!audio.ended) {
-                  audio.play();
+                if (!audio!.ended) {
+                  audio!.play();
                 }
               }}
             >
@@ -156,8 +160,8 @@ export default function Home() {
                 return alert("08시 05분 이후의 시간을 입력하십시오.");
               }
 
-              audio.pause();
-              audio.src = "";
+              audio!.pause();
+              audio!.src = "";
               setSeconds(newSeconds);
               setDoneTimes(new Set());
             }}
