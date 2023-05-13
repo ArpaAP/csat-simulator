@@ -31,7 +31,7 @@ export default function Home() {
     const reverbDecay = 0.1; // 리버브 감쇠 빠르기
 
     const delayMix = 0.7;
-    const delayFeedback = 0.7;
+    const delayFeedback = 0.6;
     const delayTime = 0.001;
 
     const inputNode = audioContext.createGain();
