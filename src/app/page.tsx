@@ -1,6 +1,6 @@
 "use client";
 import TIMELINE from "@/data/timeline";
-import { useEffect, useState } from "react";
+import { Fragment, useEffect, useState } from "react";
 import dayjs from "dayjs";
 import classNames from "classnames";
 import {
@@ -8,6 +8,8 @@ import {
   TbPlayerPause,
   TbArrowsMoveHorizontal,
 } from "react-icons/tb";
+import { Dialog, Transition } from "@headlessui/react";
+import { info } from "console";
 
 export default function Home() {
   const [audio, setAudio] = useState<HTMLAudioElement>();
@@ -19,6 +21,7 @@ export default function Home() {
     TIMELINE[0].description
   );
   const [active, setActive] = useState(false);
+  const [infoOpen, setInfoOpen] = useState(false);
 
   useEffect(() => {
     let audio = new Audio();
@@ -213,8 +216,9 @@ export default function Home() {
         <button
           type="button"
           className="flex-shrink-0 hover:bg-black/10 border border-gray-300 transition-all duration-300 my-auto px-3 py-2 rounded-lg"
+          onClick={() => setInfoOpen(true)}
         >
-          설정...
+          제작자 및 정보
         </button>
       </div>
       <hr className="border-gray-300 border-[0.5px] my-4" />
@@ -330,6 +334,86 @@ export default function Home() {
           );
         })}
       </div>
+
+      <Transition show={infoOpen} as={Fragment}>
+        <Dialog onClose={() => setInfoOpen(false)} className="relative z-50">
+          <Transition.Child
+            as={Fragment}
+            enter="ease-out duration-300"
+            enterFrom="opacity-0"
+            enterTo="opacity-100"
+            leave="ease-in duration-200"
+            leaveFrom="opacity-100"
+            leaveTo="opacity-0"
+          >
+            <div className="fixed inset-0 bg-black/30" />
+          </Transition.Child>
+
+          <Transition.Child
+            as={Fragment}
+            enter="ease-out duration-300"
+            enterFrom="opacity-0 scale-95"
+            enterTo="opacity-100 scale-100"
+            leave="ease-in duration-200"
+            leaveFrom="opacity-100 scale-100"
+            leaveTo="opacity-0 scale-95"
+          >
+            <div className="fixed inset-0 flex items-center justify-center p-4">
+              <Dialog.Panel className="w-full max-w-xl rounded-xl bg-white p-6">
+                <Dialog.Title className="text-2xl font-semibold">
+                  개발자 & 정보
+                </Dialog.Title>
+
+                <hr className="my-3 -mx-1" />
+
+                <Dialog.Description className="mb-3">
+                  <p className="font-semibold mb-4">
+                    개발자 - ArpaAP (Buyeon Hwang)
+                  </p>
+                  <p className="mb-4">
+                    소프트웨어 개발자의 진로를 희망하는 05년생 학생입니다.
+                  </p>
+                  <p className="mb-4">
+                    - 제 상세 프로필 및 포트폴리오는 GitHub에서 확인하실 수
+                    있습니다:{" "}
+                    <div className="pl-3">
+                      <a
+                        href="https://github.com/ArpaAP"
+                        target="_blank"
+                        className="underline"
+                      >
+                        https://github.com/ArpaAP
+                      </a>
+                    </div>
+                  </p>
+                  <p>
+                    - 본 웹앱의 소스 코드는 아래 링크에서 확인하실 수 있습니다.
+                    PR은 언제나 환영입니다!
+                    <div className="pl-3">
+                      <a
+                        href="https://github.com/ArpaAP/csat-simulator"
+                        target="_blank"
+                        className="underline"
+                      >
+                        https://github.com/ArpaAP/csat-simulator
+                      </a>
+                    </div>
+                  </p>
+                </Dialog.Description>
+
+                <div className="flex justify-end gap-2 mt-3">
+                  <button
+                    onClick={() => setInfoOpen(false)}
+                    className="flex gap-2 hover:bg-black/10 border border-gray-300 transition-all duration-300 my-auto px-4 py-2 rounded-lg"
+                  >
+                    닫기
+                  </button>
+                </div>
+              </Dialog.Panel>
+            </div>
+          </Transition.Child>
+        </Dialog>
+      </Transition>
     </main>
   );
 }
