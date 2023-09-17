@@ -443,7 +443,22 @@ export default function Home() {
                     </div>
                   </p>
                   <p>
-                    - 아날로그 시계 by <a href="https://github.com/VESOC" target="_blank" className="underline">VESOC</a>
+                    - 아날로그 시계 by 
+											<a
+												href="https://github.com/VESOC"
+												target="_blank"
+												className="underline"
+											>
+												VESOC 
+											</a>
+											using 
+											<a
+												href="https://github.com/wojtekmaj/react-clock"
+												target="_blank"
+												className="underline"
+											>
+												react-clock
+											</a>
                   </p>
                 </Dialog.Description>
 
