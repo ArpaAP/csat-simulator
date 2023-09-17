@@ -429,7 +429,7 @@ export default function Home() {
                       </a>
                     </div>
                   </p>
-                  <p>
+                  <p className="mb-4">
                     - 본 웹앱의 소스 코드는 아래 링크에서 확인하실 수 있습니다.
                     PR은 언제나 환영입니다!
                     <div className="pl-3">
@@ -441,6 +441,9 @@ export default function Home() {
                         https://github.com/ArpaAP/csat-simulator
                       </a>
                     </div>
+                  </p>
+                  <p>
+                    - 아날로그 시계 by <a href="https://github.com/VESOC" target="_blank" className="underline">VESOC</a>
                   </p>
                 </Dialog.Description>
 
