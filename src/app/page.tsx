@@ -1,5 +1,6 @@
 "use client";
 import TIMELINE from "@/data/timeline";
+import CLOCKTYPE from "@/data/clocktype";
 import { Fragment, useEffect, useState } from "react";
 import dayjs from "dayjs";
 import classNames from "classnames";
@@ -7,8 +8,11 @@ import {
   TbPlayerPlay,
   TbPlayerPause,
   TbArrowsMoveHorizontal,
+  TbClock,
+  TbId,
 } from "react-icons/tb";
 import { Dialog, Transition } from "@headlessui/react";
+import Clock from "react-clock";
 import { info } from "console";
 
 export default function Home() {
@@ -22,6 +26,7 @@ export default function Home() {
   );
   const [active, setActive] = useState(false);
   const [infoOpen, setInfoOpen] = useState(false);
+  const [clockType, setClockType] = useState(CLOCKTYPE.DIGITAL)
 
   useEffect(() => {
     let audio = new Audio();
@@ -223,9 +228,15 @@ export default function Home() {
       </div>
       <hr className="border-gray-300 border-[0.5px] my-4" />
       <div className="text-center my-auto select-none">
-        <div className="text-6xl lg:text-8xl pb-5">
-          {current.format("HH:mm:ss")}
-        </div>
+          {clockType === CLOCKTYPE.DIGITAL ?
+            <div className="text-6xl lg:text-8xl pb-5">
+              {current.format("HH:mm:ss")}
+            </div>
+            :
+            <div className="my-auto mx-auto w-[150px] min-[375px]:w-[250px] md:w-[450px] lg:w-[600px] pb-5">
+              <Clock className={"m-auto"} value={current.toISOString()} locale={"ko-KR"} />
+            </div>
+          }
         <div className="text-2xl font-medium">{currentTimename}</div>
 
         <div className="my-5 pt-5 flex gap-3 justify-center w-full">
@@ -288,6 +299,28 @@ export default function Home() {
           >
             <TbArrowsMoveHorizontal className="my-auto" size={18} /> 이동
           </button>
+
+          {clockType !== CLOCKTYPE.DIGITAL ? (
+            <button
+              type="button"
+              className="flex gap-3 hover:bg-black/10 border border-gray-300 transition-all duration-300 my-auto px-3 py-2 rounded-lg"
+              onClick={() => {
+                setClockType(CLOCKTYPE.DIGITAL);
+              }}
+            >
+              <TbId className="my-auto" size={17} /> 디지털
+            </button>
+          ) : (
+            <button
+              type="button"
+              className="flex gap-3 hover:bg-black/10 border border-gray-300 transition-all duration-300 my-auto px-3 py-2 rounded-lg"
+              onClick={() => {
+                setClockType(CLOCKTYPE.ANALOG);
+              }}
+            >
+              <TbClock className="my-auto" size={17} /> 아날로그
+            </button>
+          )}
         </div>
       </div>
 
