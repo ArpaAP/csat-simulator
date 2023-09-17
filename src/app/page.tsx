@@ -448,17 +448,13 @@ export default function Home() {
 												href="https://github.com/VESOC"
 												target="_blank"
 												className="underline"
-											>
-												VESOC 
-											</a>
+											> VESOC </a>
 											using 
 											<a
 												href="https://github.com/wojtekmaj/react-clock"
 												target="_blank"
 												className="underline"
-											>
-												react-clock
-											</a>
+											> react-clock </a>
                   </p>
                 </Dialog.Description>
 
