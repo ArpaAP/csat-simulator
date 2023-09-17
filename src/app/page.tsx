@@ -234,7 +234,17 @@ export default function Home() {
             </div>
             :
             <div className="my-auto mx-auto w-[150px] min-[375px]:w-[250px] md:w-[400px] pb-5">
-              <Clock className={"m-auto"} value={current.toISOString()} locale={"ko-KR"} />
+              <Clock
+                className={"m-auto"}
+                value={current.toISOString()}
+                locale={"ko-KR"}
+                renderNumbers={true}
+                hourHandWidth={6}
+                hourMarksWidth={6}
+                minuteHandWidth={4}
+                minuteMarksWidth={3}
+                secondHandWidth={2}
+                />
             </div>
           }
         <div className="text-2xl font-medium">{currentTimename}</div>
