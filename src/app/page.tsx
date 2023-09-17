@@ -233,7 +233,7 @@ export default function Home() {
               {current.format("HH:mm:ss")}
             </div>
             :
-            <div className="my-auto mx-auto w-[150px] min-[375px]:w-[250px] md:w-[450px] lg:w-[600px] pb-5">
+            <div className="my-auto mx-auto w-[150px] min-[375px]:w-[250px] md:w-[400px] pb-5">
               <Clock className={"m-auto"} value={current.toISOString()} locale={"ko-KR"} />
             </div>
           }
@@ -325,12 +325,12 @@ export default function Home() {
       </div>
 
       <div
-        className="bg-emerald-400 h-1.5 mb-0.5 rounded-sm"
+        className="bg-emerald-400 mt-0 h-1.5 rounded-sm"
         style={{
           width: `${(seconds / 30720) * 99.7}%`,
         }}
       />
-      <div className="w-full flex gap-[1px] lg:gap-[4px]">
+      <div className="mt-0 w-[95%] flex gap-[1px] lg:gap-[4px]">
         {TIMELINE.map((one, i) => {
           return (
             <div
@@ -340,7 +340,7 @@ export default function Home() {
                 width: `${(one.duration / 512) * 100}%`,
               }}
             >
-              <div className="absolute bottom-[4.5rem] w-20 text-[5px] font-medium lg:text-base">
+              <div className=" bottom-[3rem] w-20 text-[10px] font-medium lg:text-base">
                 {{
                   "0810": "국어",
                   "1015": "수학",
@@ -348,12 +348,12 @@ export default function Home() {
                   "1435": "한국사",
                   "1525": "1선택",
                   "1602": "2선택",
-                }[one.time] || ""}
+                }[one.time] || "‎"}
               </div>
               <div className="bg-slate-300 h-1.5 mt-auto rounded-sm mb-1" />
               <div
                 className={classNames(
-                  "text-[5px] text-gray-600 w-[5px] tracking-tight leading-tight",
+                  "text-[10px] text-gray-600 h-9 w-[5px] tracking-tight leading-tight",
                   ["준비령", "입실준비", "예비령", "10분전", "5분전"].includes(
                     one.short
                   ) || one.time === "1600"
