@@ -1,5 +1,6 @@
 "use client";
 import TIMELINE from "@/data/timeline";
+import CLOCKTYPE from "@/data/clocktype";
 import { Fragment, useEffect, useState } from "react";
 import dayjs from "dayjs";
 import classNames from "classnames";
@@ -7,8 +8,11 @@ import {
   TbPlayerPlay,
   TbPlayerPause,
   TbArrowsMoveHorizontal,
+  TbClock,
+  TbId,
 } from "react-icons/tb";
 import { Dialog, Transition } from "@headlessui/react";
+import Clock from "react-clock";
 import { info } from "console";
 
 export default function Home() {
@@ -22,6 +26,7 @@ export default function Home() {
   );
   const [active, setActive] = useState(false);
   const [infoOpen, setInfoOpen] = useState(false);
+  const [clockType, setClockType] = useState(CLOCKTYPE.DIGITAL)
 
   useEffect(() => {
     let audio = new Audio();
@@ -223,9 +228,25 @@ export default function Home() {
       </div>
       <hr className="border-gray-300 border-[0.5px] my-4" />
       <div className="text-center my-auto select-none">
-        <div className="text-6xl lg:text-8xl pb-5">
-          {current.format("HH:mm:ss")}
-        </div>
+          {clockType === CLOCKTYPE.DIGITAL ?
+            <div className="text-6xl lg:text-8xl pb-5">
+              {current.format("HH:mm:ss")}
+            </div>
+            :
+            <div className="my-auto mx-auto w-[150px] min-[375px]:w-[250px] md:w-[400px] pb-5">
+              <Clock
+                className={"m-auto"}
+                value={current.toISOString()}
+                locale={"ko-KR"}
+                renderNumbers={true}
+                hourHandWidth={6}
+                hourMarksWidth={6}
+                minuteHandWidth={4}
+                minuteMarksWidth={3}
+                secondHandWidth={2}
+                />
+            </div>
+          }
         <div className="text-2xl font-medium">{currentTimename}</div>
 
         <div className="my-5 pt-5 flex gap-3 justify-center w-full">
@@ -288,16 +309,38 @@ export default function Home() {
           >
             <TbArrowsMoveHorizontal className="my-auto" size={18} /> 이동
           </button>
+
+          {clockType !== CLOCKTYPE.DIGITAL ? (
+            <button
+              type="button"
+              className="flex gap-3 hover:bg-black/10 border border-gray-300 transition-all duration-300 my-auto px-3 py-2 rounded-lg"
+              onClick={() => {
+                setClockType(CLOCKTYPE.DIGITAL);
+              }}
+            >
+              <TbId className="my-auto" size={17} /> 디지털
+            </button>
+          ) : (
+            <button
+              type="button"
+              className="flex gap-3 hover:bg-black/10 border border-gray-300 transition-all duration-300 my-auto px-3 py-2 rounded-lg"
+              onClick={() => {
+                setClockType(CLOCKTYPE.ANALOG);
+              }}
+            >
+              <TbClock className="my-auto" size={17} /> 아날로그
+            </button>
+          )}
         </div>
       </div>
 
       <div
-        className="bg-emerald-400 h-1.5 mb-0.5 rounded-sm"
+        className="bg-emerald-400 mt-0 h-1.5 rounded-sm"
         style={{
           width: `${(seconds / 30720) * 99.7}%`,
         }}
       />
-      <div className="w-full flex gap-[1px] lg:gap-[4px]">
+      <div className="mt-0 w-[95%] flex gap-[1px] lg:gap-[4px]">
         {TIMELINE.map((one, i) => {
           return (
             <div
@@ -307,7 +350,7 @@ export default function Home() {
                 width: `${(one.duration / 512) * 100}%`,
               }}
             >
-              <div className="absolute bottom-[4.5rem] w-20 text-[5px] font-medium lg:text-base">
+              <div className=" bottom-[3rem] w-20 text-[10px] font-medium lg:text-base">
                 {{
                   "0810": "국어",
                   "1015": "수학",
@@ -315,12 +358,12 @@ export default function Home() {
                   "1435": "한국사",
                   "1525": "1선택",
                   "1602": "2선택",
-                }[one.time] || ""}
+                }[one.time] || "‎"}
               </div>
               <div className="bg-slate-300 h-1.5 mt-auto rounded-sm mb-1" />
               <div
                 className={classNames(
-                  "text-[5px] text-gray-600 w-[5px] tracking-tight leading-tight",
+                  "text-[10px] text-gray-600 h-9 w-[5px] tracking-tight leading-tight",
                   ["준비령", "입실준비", "예비령", "10분전", "5분전"].includes(
                     one.short
                   ) || one.time === "1600"
@@ -386,7 +429,7 @@ export default function Home() {
                       </a>
                     </div>
                   </p>
-                  <p>
+                  <p className="mb-4">
                     - 본 웹앱의 소스 코드는 아래 링크에서 확인하실 수 있습니다.
                     PR은 언제나 환영입니다!
                     <div className="pl-3">
@@ -398,6 +441,24 @@ export default function Home() {
                         https://github.com/ArpaAP/csat-simulator
                       </a>
                     </div>
+                  </p>
+                  <p>
+                    - 아날로그 시계 by&nbsp;
+											<a
+												href="https://github.com/VESOC"
+												target="_blank"
+												className="underline"
+											>
+												VESOC
+											</a>
+											&nbsp;using&nbsp;
+											<a
+												href="https://github.com/wojtekmaj/react-clock"
+												target="_blank"
+												className="underline"
+											>
+												react-clock 
+											</a>
                   </p>
                 </Dialog.Description>
 
