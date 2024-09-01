@@ -215,7 +215,7 @@ export default function Home() {
             대학수학능력시험 시뮬레이터
           </h1>
           <div className="text-gray-500 font-light text-xs lg:text-sm">
-            CSAT SIMULATOR 2024
+            CSAT SIMULATOR 2025
           </div>
         </div>
         <button
