@@ -4,6 +4,8 @@
 
 @import url("https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.6/dist/web/static/pretendard-dynamic-subset.css");
 
+@import "react-clock/dist/Clock.css";
+
 body {
   font-family: "Pretendard Variable", Pretendard, -apple-system,
     BlinkMacSystemFont, system-ui, Roboto, "Helvetica Neue", "Segoe UI",
@@ -11,4 +13,9 @@ body {
     "Segoe UI Emoji", "Segoe UI Symbol", sans-serif;
 
   @apply bg-slate-100;
+}
+
+.react-clock {
+  width: inherit !important;
+  padding-top: 100%;
 }
